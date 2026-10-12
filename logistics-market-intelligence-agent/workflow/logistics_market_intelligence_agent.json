@@ -1,0 +1,1261 @@
+{
+  "name": "Logistics Real-Estate Market Intelligence Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 1 · Source\n10 targeted Google searches (via SerpAPI) across property portals, consultancy sites and news.",
+        "width": 720,
+        "height": 1130,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -140,
+        330
+      ],
+      "id": "8bc3761d-36e5-4b75-98fe-f6fb83aa36cb",
+      "name": "Note: Stage 1"
+    },
+    {
+      "parameters": {
+        "content": "## 2 · Clean & Triage\nMerge, de-duplicate, drop noise sites, tag record type, extract city / type / deal / area / price.",
+        "width": 880,
+        "height": 380,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        720,
+        660
+      ],
+      "id": "f1b6f526-6a48-4661-a284-f54ea45553fb",
+      "name": "Note: Stage 2"
+    },
+    {
+      "parameters": {
+        "content": "## 3 · AI Scoring\nClaude scores each property 1–10 against the three product lines. Batched with a pause to respect rate limits.",
+        "width": 920,
+        "height": 580,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1660,
+        660
+      ],
+      "id": "e801a55f-84d3-48db-bc78-ce2ddf7c2531",
+      "name": "Note: Stage 3"
+    },
+    {
+      "parameters": {
+        "content": "## 4 · Output\nRank by score and upsert into the Google Sheet opportunity tracker (matched on URL, so re-runs update instead of duplicating).",
+        "width": 480,
+        "height": 380,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        2640,
+        660
+      ],
+      "id": "47c45c64-d991-4295-8f13-7e01883f1285",
+      "name": "Note: Stage 4"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -60,
+        760
+      ],
+      "id": "47989e34-c09a-4112-a5cf-3cf0ad2283b1",
+      "name": "Run Manually"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 8
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -60,
+        960
+      ],
+      "id": "65d65b53-6148-40ff-973c-cb4e047cbcc7",
+      "name": "Run Weekly (Mon 08:00)"
+    },
+    {
+      "parameters": {
+        "numberInputs": 10
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        780,
+        860
+      ],
+      "id": "63491891-894d-4bd4-a578-281b5e2b9bdb",
+      "name": "Combine Search Results"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "warehouse for sale OR rent Mumbai site:magicbricks.com OR site:99acres.com"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        200,
+        480
+      ],
+      "id": "00201572-d425-4cca-a864-57933fa0a510",
+      "name": "Search: Mumbai Warehouses"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "industrial plot for sale Indore Bhopal Ahmedabad Surat"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        200,
+        670
+      ],
+      "id": "c7993d3f-e0f6-4acb-98c6-0147670f588a",
+      "name": "Search: Central & West India Plots"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "warehouse godown for rent India site:99acres.com OR site:magicbricks.com OR site:nobroker.in"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        200,
+        860
+      ],
+      "id": "a2ec9505-2edc-4db7-bd90-5039a1303bfa",
+      "name": "Search: Warehouse Rentals India"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "industrial land plot for sale India site:99acres.com OR site:magicbricks.com OR site:realestateindia.com"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        200,
+        1050
+      ],
+      "id": "f1944b5a-3dce-4400-98c8-305843a79cd1",
+      "name": "Search: Industrial Land India"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "multimodal logistics park land acquisition India news"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        200,
+        1240
+      ],
+      "id": "b1032896-2e74-4c40-ace0-8b3932170142",
+      "name": "Search: Multimodal Park News"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "Grade A warehouse for rent India site:colliers.com OR site:jll.com OR site:cushmanwakefield.com"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        440,
+        480
+      ],
+      "id": "80e7afd8-0793-40c5-b162-628c4f7657b6",
+      "name": "Search: Grade-A Warehouses (IPCs)"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "last mile urban warehouse lease Delhi NCR Bengaluru Chennai"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        440,
+        670
+      ],
+      "id": "d611158d-51fc-467d-9bc7-b001e386f624",
+      "name": "Search: Last-Mile Metro Leases"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "industrial land for sale Jaipur Lucknow Vadodara Coimbatore"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        440,
+        860
+      ],
+      "id": "4a57f7fc-dcf1-4825-8667-54444710d04a",
+      "name": "Search: Tier 2 Industrial Land"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "warehouse for sale India site:99acres.com OR site:magicbricks.com OR site:squareyards.com"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        440,
+        1050
+      ],
+      "id": "a111302f-ea8b-4b80-ba5b-0e4ea80cabdd",
+      "name": "Search: Warehouses for Sale"
+    },
+    {
+      "parameters": {
+        "url": "https://serpapi.com/search.json",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "serpApi",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "engine",
+              "value": "google"
+            },
+            {
+              "name": "q",
+              "value": "logistics park land for sale India site:99acres.com OR site:magicbricks.com OR site:realestateindia.com"
+            },
+            {
+              "name": "num",
+              "value": "20"
+            },
+            {
+              "name": "hl",
+              "value": "en"
+            },
+            {
+              "name": "gl",
+              "value": "in"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        440,
+        1240
+      ],
+      "id": "b550d035-fe19-4acf-ac08-e51642d763cc",
+      "name": "Search: Logistics Park Land"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Flatten organic + news results from all searches and remove duplicate URLs\nconst seen = new Set();\nconst out = [];\n\nfor (const item of $input.all()) {\n  const results = [\n    ...(item.json.organic_results || []),\n    ...(item.json.news_results || [])\n  ];\n  for (const r of results) {\n    if (!r.link || seen.has(r.link)) continue;\n    seen.add(r.link);\n    out.push({ json: {\n      title:      (r.title || '').trim(),\n      url:        r.link,\n      snippet:    (r.snippet || '').trim(),\n      source:     r.displayed_link || r.source || '',\n      date:       r.date || '',\n      query_used: item.json.search_parameters?.q || ''\n    }});\n  }\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1020,
+        860
+      ],
+      "id": "d2b88b4b-9e78-480a-b8ff-80f043fc1f6e",
+      "name": "Normalise & De-duplicate"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Rule-based triage: drop noise, tag record type, extract structured fields\nconst NOISE = [\n  'translate.google','instagram.com','linkedin.com/posts',\n  'facebook.com/groups','justdial.com','dir.indiamart.com',\n  'tradeindia.com','epack.in','ritutechnbuilds.com',\n  'wadigroup.in','jainoncor.com/blog','logisticmart.com'\n];\n\nconst INTEL = [\n  'colliers.com','cushmanwakefield.com','jll.com',\n  'pib.gov.in','pppinindia.gov.in','thehindu.com',\n  'timesofindia','economictimes','business-standard.com',\n  'livemint.com','invest.up.gov.in','iima.ac.in'\n];\n\nconst PORTAL = [/ffid$/, /pppfr$/, /pppfs$/, /\\/nct-\\d+/];\n\nconst CITIES = [\n  'Navi Mumbai','Mumbai','Thane','Pune','Indore','Bhopal',\n  'Delhi','Noida','Gurgaon','Gurugram','Bengaluru','Bangalore','Hyderabad','Chennai',\n  'Kolkata','Ahmedabad','Surat','Vadodara','Nagpur','Jaipur',\n  'Lucknow','Varanasi','Coimbatore','Bhiwandi','Kalamboli'\n];\n\nfunction recordType(url) {\n  if (NOISE.some(d => url.includes(d)))  return 'discard';\n  if (INTEL.some(d => url.includes(d)))  return 'intel';\n  if (PORTAL.some(p => p.test(url)))     return 'portal';\n  return 'listing';\n}\n\nfunction pick(text, patterns, fallback) {\n  for (const [re, val] of patterns)\n    if (re.test(text)) return val;\n  return fallback;\n}\n\nconst out = [];\n\nfor (const item of $input.all()) {\n  const r = item.json;\n  const type = recordType(r.url);\n  if (type === 'discard') continue;\n\n  const text = r.title + ' ' + r.snippet;\n\n  out.push({ json: {\n    ...r,\n    record_type:   type,\n    city:          CITIES.find(c => new RegExp('\\\\b' + c + '\\\\b', 'i').test(text)) || '',\n    property_type: pick(text, [\n      [/multimodal|mmlp/i,         'Multimodal Park'],\n      [/cold.?storage/i,           'Cold Storage'],\n      [/logistics.?park/i,         'Logistics Park'],\n      [/industrial.?(land|plot)/i, 'Industrial Land'],\n      [/warehouse|godown|gala/i,   'Warehouse']\n    ], 'Other'),\n    deal_type: pick(text, [\n      [/\\brent\\b|\\blease/i,    'Rent/Lease'],\n      [/\\bsale\\b|freehold/i,   'Sale']\n    ], 'Unknown'),\n    area:  (text.match(/[\\d,.]+\\s*(sq\\.?\\s*ft|sqft|sq\\.?\\s*yd|sq\\.?\\s*m|acres?)\\b/i) || [])[0] || '',\n    price: (text.match(/(₹|Rs\\.?|INR)\\s*[\\d,.]+\\s*(L|Cr|lakh|lac|crore)?/i) || [])[0] || '',\n    scraped_date: new Date().toISOString().split('T')[0]\n  }});\n}\n\nreturn out;\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1240,
+        860
+      ],
+      "id": "9b65d643-f714-484a-aaae-2eaf7098b57a",
+      "name": "Classify & Extract Fields"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "54a93d19-818e-4067-bdf3-baa8e6f45d3d",
+              "leftValue": "={{ $json.record_type }}",
+              "rightValue": "listing",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "a0dc4b7f-ff12-4abb-af91-38c0bf121b8d",
+              "leftValue": "={{ $json.record_type }}",
+              "rightValue": "portal",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1460,
+        860
+      ],
+      "id": "2a4cd40f-0222-4bd7-b299-8faf6896f0ca",
+      "name": "Keep Property Records Only"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Build a scoring prompt per property. All original fields are kept on the item\n// so the parse step can recover them after the API call (via paired items).\nfunction clean(v, max = 300) {\n  return String(v || '')\n    .replace(/[\\u0000-\\u001F\\u007F]/g, ' ')   // control characters only\n    .replace(/\\s+/g, ' ')\n    .trim()\n    .slice(0, max);\n}\n\nreturn $input.all().map(item => {\n  const r = item.json;\n\n  const prompt = [\n    'Evaluate this property as a potential site for a logistics real-estate developer with three product lines:',\n    '- \"Multimodal Park\": large multimodal logistics parks (rail/road connected, typically 50+ acres)',\n    '- \"Regional Warehouse\": Grade-A warehouses in Tier 2 and Tier 3 cities',\n    '- \"Urban Last-Mile\": small urban fulfilment hubs close to consumers in metro cities',\n    '',\n    'Property:',\n    'Title: ' + clean(r.title),\n    'City: ' + (clean(r.city) || 'Unknown'),\n    'Property type: ' + clean(r.property_type),\n    'Deal type: ' + clean(r.deal_type),\n    'Area: ' + (clean(r.area) || 'Not stated'),\n    'Price: ' + (clean(r.price) || 'Not stated'),\n    'Details: ' + clean(r.snippet),\n    'Source: ' + clean(r.source),\n    '',\n    'Reply with ONLY a JSON object with these keys:',\n    'score (integer 1-10), product_fit (\"Multimodal Park\" | \"Regional Warehouse\" | \"Urban Last-Mile\" | \"None\"),',\n    'deal_fit (\"High\" | \"Medium\" | \"Low\"), action (\"Pursue\" | \"Shortlist\" | \"Monitor\" | \"Skip\"),',\n    'strategic_note (max 20 words), risk (max 15 words).',\n    'Example: {\"score\":7,\"product_fit\":\"Regional Warehouse\",\"deal_fit\":\"High\",\"action\":\"Shortlist\",\"strategic_note\":\"Highway-adjacent plot in growing Tier 2 consumption hub\",\"risk\":\"Land title and zoning unverified\"}'\n  ].join('\\n');\n\n  return { json: { ...r, prompt } };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1740,
+        860
+      ],
+      "id": "b8c69f2f-f447-49ab-a27a-d79b30dd9c35",
+      "name": "Build AI Scoring Prompt"
+    },
+    {
+      "parameters": {
+        "batchSize": 3,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1960,
+        860
+      ],
+      "id": "ae809013-7758-4b59-a4cb-fb7b6a1d4b03",
+      "name": "Batch (3 at a time)"
+    },
+    {
+      "parameters": {
+        "amount": 4
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1960,
+        1060
+      ],
+      "id": "e8380235-ef10-4777-b4f9-cce18fe6992e",
+      "name": "Rate-limit Pause (4s)",
+      "webhookId": "d5ca9790-9a74-47f3-a8b1-e7c66467c226"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "anthropicApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: \"claude-haiku-4-5-20251001\", max_tokens: 400, system: \"You are a logistics real-estate investment analyst. Reply only with a raw JSON object. No markdown, no extra text.\", messages: [{ role: \"user\", content: $json.prompt }] }) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.4,
+      "position": [
+        2180,
+        1060
+      ],
+      "id": "67aa6ed8-5397-4df7-8af0-a83a414542cd",
+      "name": "Claude: Score Opportunity"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Runs once per item: parse Claude's JSON verdict and re-attach the original listing fields\nconst src = $('Build AI Scoring Prompt').item.json;   // original record (paired item)\nconst raw = $json.content?.[0]?.text || '';\n\nlet ai;\ntry {\n  const match = raw.match(/\\{[\\s\\S]*\\}/);              // tolerate stray text around the JSON\n  ai = JSON.parse(match ? match[0] : raw);\n} catch (e) {\n  ai = { score: 0, product_fit: 'None', deal_fit: 'Low', action: 'Skip',\n         strategic_note: 'AI response could not be parsed', risk: '' };\n}\n\nreturn { json: {\n  scraped_date:   src.scraped_date  || '',\n  title:          src.title         || '',\n  city:           src.city          || '',\n  property_type:  src.property_type || '',\n  deal_type:      src.deal_type     || '',\n  area:           src.area          || '',\n  price:          src.price         || '',\n  record_type:    src.record_type   || '',\n  source:         src.source        || '',\n  url:            src.url           || '',\n  snippet:        (src.snippet || '').slice(0, 300),\n  query_used:     src.query_used    || '',\n  ai_score:       Math.max(0, Math.min(10, Number(ai.score) || 0)),\n  product_fit:    ai.product_fit    || 'None',\n  deal_fit:       ai.deal_fit       || '',\n  action:         ai.action         || 'Skip',\n  strategic_note: ai.strategic_note || '',\n  risk:           ai.risk           || ''\n}};\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2400,
+        1060
+      ],
+      "id": "7170b7c6-006a-45e6-9635-0113c7350dbc",
+      "name": "Parse AI Verdict"
+    },
+    {
+      "parameters": {
+        "sortFieldsUi": {
+          "sortField": [
+            {
+              "fieldName": "ai_score",
+              "order": "descending"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.sort",
+      "typeVersion": 1,
+      "position": [
+        2700,
+        860
+      ],
+      "id": "619911b5-a68a-40dd-aa45-9cef1d3f532c",
+      "name": "Rank by AI Score"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "PASTE_YOUR_GOOGLE_SHEET_ID_HERE",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Date": "={{ $json.scraped_date }}",
+            "Title": "={{ $json.title }}",
+            "City": "={{ $json.city }}",
+            "Property Type": "={{ $json.property_type }}",
+            "Deal Type": "={{ $json.deal_type }}",
+            "Area": "={{ $json.area }}",
+            "Price": "={{ $json.price }}",
+            "AI Score": "={{ $json.ai_score }}",
+            "Product Fit": "={{ $json.product_fit }}",
+            "Deal Fit": "={{ $json.deal_fit }}",
+            "Action": "={{ $json.action }}",
+            "Strategic Note": "={{ $json.strategic_note }}",
+            "Risk": "={{ $json.risk }}",
+            "Record Type": "={{ $json.record_type }}",
+            "Source": "={{ $json.source }}",
+            "URL": "={{ $json.url }}",
+            "Snippet": "={{ $json.snippet }}",
+            "Query Used": "={{ $json.query_used }}"
+          },
+          "matchingColumns": [
+            "URL"
+          ],
+          "schema": [
+            {
+              "id": "Date",
+              "displayName": "Date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Title",
+              "displayName": "Title",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "City",
+              "displayName": "City",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Property Type",
+              "displayName": "Property Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deal Type",
+              "displayName": "Deal Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Area",
+              "displayName": "Area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Price",
+              "displayName": "Price",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "AI Score",
+              "displayName": "AI Score",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Product Fit",
+              "displayName": "Product Fit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Deal Fit",
+              "displayName": "Deal Fit",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Action",
+              "displayName": "Action",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Strategic Note",
+              "displayName": "Strategic Note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Risk",
+              "displayName": "Risk",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Record Type",
+              "displayName": "Record Type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Source",
+              "displayName": "Source",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "URL",
+              "displayName": "URL",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Snippet",
+              "displayName": "Snippet",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Query Used",
+              "displayName": "Query Used",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2920,
+        860
+      ],
+      "id": "98505725-864c-4f42-a6e6-2126ec3184ec",
+      "name": "Write to Opportunity Tracker"
+    }
+  ],
+  "connections": {
+    "Run Manually": {
+      "main": [
+        [
+          {
+            "node": "Search: Mumbai Warehouses",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Central & West India Plots",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Warehouse Rentals India",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Industrial Land India",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Multimodal Park News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Grade-A Warehouses (IPCs)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Last-Mile Metro Leases",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Tier 2 Industrial Land",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Warehouses for Sale",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Logistics Park Land",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Run Weekly (Mon 08:00)": {
+      "main": [
+        [
+          {
+            "node": "Search: Mumbai Warehouses",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Central & West India Plots",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Warehouse Rentals India",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Industrial Land India",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Multimodal Park News",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Grade-A Warehouses (IPCs)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Last-Mile Metro Leases",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Tier 2 Industrial Land",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Warehouses for Sale",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Search: Logistics Park Land",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search: Mumbai Warehouses": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search: Central & West India Plots": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Search: Warehouse Rentals India": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Search: Industrial Land India": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Search: Multimodal Park News": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 4
+          }
+        ]
+      ]
+    },
+    "Search: Grade-A Warehouses (IPCs)": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 5
+          }
+        ]
+      ]
+    },
+    "Search: Last-Mile Metro Leases": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 6
+          }
+        ]
+      ]
+    },
+    "Search: Tier 2 Industrial Land": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 7
+          }
+        ]
+      ]
+    },
+    "Search: Warehouses for Sale": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 8
+          }
+        ]
+      ]
+    },
+    "Search: Logistics Park Land": {
+      "main": [
+        [
+          {
+            "node": "Combine Search Results",
+            "type": "main",
+            "index": 9
+          }
+        ]
+      ]
+    },
+    "Combine Search Results": {
+      "main": [
+        [
+          {
+            "node": "Normalise & De-duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise & De-duplicate": {
+      "main": [
+        [
+          {
+            "node": "Classify & Extract Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify & Extract Fields": {
+      "main": [
+        [
+          {
+            "node": "Keep Property Records Only",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Keep Property Records Only": {
+      "main": [
+        [
+          {
+            "node": "Build AI Scoring Prompt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build AI Scoring Prompt": {
+      "main": [
+        [
+          {
+            "node": "Batch (3 at a time)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch (3 at a time)": {
+      "main": [
+        [
+          {
+            "node": "Rank by AI Score",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Rate-limit Pause (4s)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rate-limit Pause (4s)": {
+      "main": [
+        [
+          {
+            "node": "Claude: Score Opportunity",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claude: Score Opportunity": {
+      "main": [
+        [
+          {
+            "node": "Parse AI Verdict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse AI Verdict": {
+      "main": [
+        [
+          {
+            "node": "Batch (3 at a time)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Rank by AI Score": {
+      "main": [
+        [
+          {
+            "node": "Write to Opportunity Tracker",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "meta": {}
+}
